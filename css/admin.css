@@ -1,0 +1,137 @@
+/* ===========================================
+   RESTAURANT THEME - ADMIN STYLES
+   =========================================== */
+
+/* Reservation Status Colors */
+.status-pending { 
+    color: #f39c12 !important; 
+    font-weight: bold;
+}
+
+.status-confirmed { 
+    color: #27ae60 !important; 
+    font-weight: bold;
+}
+
+.status-cancelled { 
+    color: #e74c3c !important; 
+    font-weight: bold;
+}
+
+.status-completed { 
+    color: #3498db !important; 
+    font-weight: bold;
+}
+
+/* Admin Column Widths */
+.column-status { 
+    width: 100px; 
+}
+
+.column-date_created { 
+    width: 150px; 
+}
+
+.column-name {
+    width: 150px;
+}
+
+.column-email {
+    width: 200px;
+}
+
+/* Reservation Meta Box */
+.reservation-meta-box {
+    padding: 15px;
+}
+
+.reservation-field {
+    margin-bottom: 15px;
+}
+
+.reservation-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.reservation-field input,
+.reservation-field select,
+.reservation-field textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+/* Developer Credit Warning */
+#developer-credit-warning {
+    border-left: 4px solid #ff0000;
+}
+
+/* License Management */
+.license-form {
+    max-width: 600px;
+    margin: 20px 0;
+}
+
+.license-status {
+    border-radius: 5px;
+    border-left: 4px solid #0073aa;
+    padding: 20px;
+    background: #f5f5f5;
+}
+
+/* Theme Update Notice */
+.notice-restaurant-theme-update {
+    border-left-color: #C41E3A;
+}
+
+.notice-restaurant-theme-update p:before {
+    content: "🍽️";
+    margin-right: 10px;
+}
+
+/* Custom Dashboard Widget */
+#restaurant_recent_reservations .inside {
+    margin: 0;
+    padding: 0;
+}
+
+#restaurant_recent_reservations ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#restaurant_recent_reservations li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 3px;
+    border-left: 3px solid #C41E3A;
+}
+
+#restaurant_recent_reservations li:hover {
+    background: #e9e9e9;
+}
+
+/* Menu Item Meta Box */
+#menu_item_details .inside {
+    padding: 10px;
+}
+
+#menu_item_details input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+/* Testimonial Meta Box */
+#testimonial_author .inside {
+    padding: 10px;
+}
+
+#testimonial_author input[type="text"] {
+    width: 100%;
+    padding: 8px;
+}

@@ -1,0 +1,232 @@
+/* ===========================================
+   RESTAURANT THEME - RESPONSIVE STYLES
+   =========================================== */
+
+/* Large Desktop */
+@media (max-width: 1200px) {
+    .hero h1 {
+        font-size: 3.5rem;
+    }
+    
+    .menu-items {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Tablet Landscape */
+@media (max-width: 992px) {
+    .hero h1 {
+        font-size: 3rem;
+    }
+    
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 50px;
+    }
+    
+    .about-image {
+        order: -1;
+    }
+    
+    .reservation-container {
+        grid-template-columns: 1fr;
+        gap: 50px;
+    }
+    
+    .reservation-info {
+        padding-right: 0;
+        text-align: center;
+    }
+    
+    .menu-items {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Tablet Portrait */
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+    
+    nav {
+        position: fixed;
+        top: 80px;
+        left: -100%;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+        padding: 30px 20px;
+        z-index: 999;
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+    
+    nav.active {
+        left: 0;
+    }
+    
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    nav li {
+        margin: 0 0 25px 0;
+    }
+    
+    nav a {
+        font-size: 1.2rem;
+    }
+    
+    .hero {
+        padding: 150px 0 80px;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero p {
+        font-size: 1.1rem;
+    }
+    
+    .section-title h2 {
+        font-size: 2.3rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .hero-buttons a, .hero-buttons button {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .menu-items {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .logo {
+        font-size: 1.6rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.4rem;
+    }
+    
+    .footer-logo {
+        font-size: 1.4rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+    section {
+        padding: 80px 0;
+    }
+    
+    .hero {
+        padding: 130px 0 70px;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .special-offer h2 {
+        font-size: 2.5rem;
+    }
+    
+    .features {
+        grid-template-columns: 1fr;
+    }
+    
+    .testimonial-slider {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-tabs {
+        gap: 10px;
+    }
+    
+    .tab-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .category-header h3 {
+        font-size: 1.8rem;
+    }
+    
+    .logo {
+        font-size: 1.4rem;
+    }
+    
+    .footer-logo {
+        font-size: 1.2rem;
+    }
+}
+
+/* Multi-page Mode Responsive */
+body.multi-page-mode #mainNav {
+    position: fixed;
+    top: 80px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background-color: white;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+    padding: 30px 20px;
+    z-index: 999;
+    overflow-y: auto;
+}
+
+body.multi-page-mode #mainNav.active {
+    left: 0;
+}
+
+body.multi-page-mode #mainNav ul {
+    flex-direction: column;
+    align-items: center;
+}
+
+body.multi-page-mode #mainNav li {
+    margin: 0 0 25px 0;
+}
+
+body.multi-page-mode #mainNav a {
+    font-size: 1.2rem;
+}
+
+/* Small mobile adjustments */
+@media (max-width: 400px) {
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .special-offer h2 {
+        font-size: 2rem;
+    }
+    
+    .tab-btn {
+        padding: 10px 15px;
+        font-size: 0.8rem;
+    }
+    
+    .reservation-form-container,
+    .contact-form-container {
+        padding: 30px 20px;
+    }
+}

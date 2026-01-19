@@ -1,0 +1,18 @@
+/*
+Theme Name: Restaurant Theme v1
+Theme URI: https://www.faikguler.com
+Author: Faik Guler
+Author URI: https://www.faikguler.com
+Description: Professional restaurant WordPress theme with dynamic content management, menu system, and reservation features. Perfect for restaurants, cafes, and food businesses.
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: restaurant-theme
+Tags: restaurant, food, menu, reservation, responsive, customizable
+
+This theme is licensed for commercial use.
+*/
+
+/* Import modular CSS files */
+@import url('css/main.css');
+@import url('css/responsive.css');
