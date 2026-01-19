@@ -3,6 +3,7 @@
  * Main template file
  * 
  * @package Restaurant_Theme
+ * Faik GULER
  */
 
 get_header();
