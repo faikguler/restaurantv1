@@ -88,10 +88,10 @@ class Restaurant_Theme_GitHub_Updater {
         }
         
         // Mevcut tema versiyonu
-        $current_version = wp_get_theme($this->slug)->get('Version');
+        $current_version = str_replace('v', '', wp_get_theme($this->slug)->get('Version'));
         
         // GitHub'daki versiyon
-        $github_version = ltrim($github_data->tag_name, 'v');
+        $github_version = str_replace('v', '', $github_data->tag_name);
         
         // Versiyon karşılaştırması
         if (version_compare($current_version, $github_version, '<')) {
@@ -119,7 +119,7 @@ class Restaurant_Theme_GitHub_Updater {
     /**
      * Güncelleme öncesi işlemler
      */
-    public function pre_install($response, $hook_extra, $result) {
+    public function pre_install($response, $hook_extra, $result = null) {
         // Gerekirse tema yedeği al
         if (!defined('RESTAURANT_THEME_BACKUP')) {
             define('RESTAURANT_THEME_BACKUP', true);
@@ -132,7 +132,10 @@ class Restaurant_Theme_GitHub_Updater {
     /**
      * Güncelleme sonrası işlemler
      */
-    public function post_install($response, $hook_extra, $result) {
+    public function post_install($response, $hook_extra, $result = null) {
+     if (is_null($result)) {
+        return $response;  // Eğer $result yoksa orijinal response'u döndür
+    }       
         global $wp_filesystem;
         
         $install_directory = get_template_directory();
@@ -167,8 +170,9 @@ class Restaurant_Theme_GitHub_Updater {
             return;
         }
         
-        $current_version = wp_get_theme($this->slug)->get('Version');
-        $github_version = ltrim($github_data->tag_name, 'v');
+        $current_version = str_replace('v', '', wp_get_theme($this->slug)->get('Version'));
+
+        $github_version = str_replace('v', '', $github_data->tag_name);
         
         if (version_compare($current_version, $github_version, '<')) {
             ?>
