@@ -20,7 +20,7 @@ class Restaurant_Theme_GitHub_Updater {
         
         // GitHub bilgileriniz
         $this->github_username = 'faikguler'; // GitHub kullanıcı adınız
-        $this->github_repository = 'restaurant-theme'; // GitHub repository adı
+        $this->github_repository = 'restaurantv1'; // GitHub repository adı
         $this->github_token = ''; // Private repo için token (gerekirse)
         
         // Eylemleri başlat
