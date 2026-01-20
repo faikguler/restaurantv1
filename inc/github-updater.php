@@ -1,244 +1,136 @@
 <?php
 /**
- * GitHub Auto Updater - GÜVENLİ VERSİYON
+ * GitHub Auto Updater
+ * Tema klasör yapısını otomatik düzeltir
+ * 
+ * @package Restaurant_Theme
  */
 
 if (!defined('ABSPATH')) exit;
 
 class Restaurant_Theme_GitHub_Updater {
     
-    private $slug;
-    private $theme_data;
-    private $github_username;
-    private $github_repository;
-    private $github_response;
-    private $github_token;
-    private $backup_dir;
+    private $github_username = 'faikguler';
+    private $github_repository = 'restaurantv1';
+    private $theme_slug = 'restaurantv1';
     
     public function __construct() {
-        // Tema bilgilerini al
-        $this->slug = basename(get_template_directory());
-        
-        // GitHub bilgileriniz
-        $this->github_username = 'faikguler';
-        $this->github_repository = 'restaurantv1';
-        $this->github_token = '';
-        
-        // Yedek klasörü
-        $this->backup_dir = WP_CONTENT_DIR . '/restaurant-theme-backups/';
-        
-        // SADECE bu filtreyi kullanın, diğerlerini KALDIRIN
-        add_filter('pre_set_site_transient_update_themes', array($this, 'modify_transient'), 10, 1);
-        add_action('admin_notices', array($this, 'show_update_notice'));
-        
-        // AJAX güncelleme kontrolü
-        add_action('wp_ajax_check_theme_updates', array($this, 'ajax_check_updates'));
-        
-        // Güncelleme kontrolü zamanlayıcı
-        if (!wp_next_scheduled('restaurant_theme_daily_update_check')) {
-            wp_schedule_event(time(), 'daily', 'restaurant_theme_daily_update_check');
-        }
-        add_action('restaurant_theme_daily_update_check', array($this, 'check_for_updates'));
-        
-        // Manuel güncelleme butonu için
-        add_action('admin_bar_menu', array($this, 'add_admin_bar_update_button'), 100);
+        add_filter('pre_set_site_transient_update_themes', array($this, 'check_for_update'));
+        add_filter('upgrader_source_selection', array($this, 'fix_github_folder'), 10, 4);
     }
     
     /**
-     * GitHub'dan güncelleme bilgilerini al
+     * GitHub'dan güncelleme kontrolü
      */
-    private function get_repository_info() {
-        if (is_null($this->github_response)) {
-            $request_uri = sprintf('https://api.github.com/repos/%s/%s/releases/latest', 
-                $this->github_username, 
-                $this->github_repository
-            );
-            
-            $args = array(
-                'headers' => array(
-                    'User-Agent' => 'WordPress-Restaurant-Theme',
-                ),
-                'timeout' => 30,
-            );
-            
-            if (!empty($this->github_token)) {
-                $args['headers']['Authorization'] = 'token ' . $this->github_token;
-            }
-            
-            $response = wp_remote_get($request_uri, $args);
-            
-            if (is_wp_error($response)) {
-                error_log('GitHub Updater Error: ' . $response->get_error_message());
-                return false;
-            }
-            
-            $this->github_response = json_decode(wp_remote_retrieve_body($response));
-        }
-        
-        return $this->github_response;
-    }
-    
-    /**
-     * Transient'i güncelle - SADECE BURASI ÇALIŞSIN
-     */
-    public function modify_transient($transient) {
+    public function check_for_update($transient) {
         if (empty($transient->checked)) {
             return $transient;
         }
         
-        $github_data = $this->get_repository_info();
-        
-        if (!$github_data || !isset($github_data->tag_name)) {
+        $remote = $this->get_remote_version();
+        if (!$remote) {
             return $transient;
         }
         
-        // Versiyon karşılaştırması
-        $current_version = wp_get_theme($this->slug)->get('Version');
-        $current_version_clean = str_replace('v', '', $current_version);
-        $github_version = str_replace('v', '', $github_data->tag_name);
+        $current = wp_get_theme($this->theme_slug)->get('Version');
+        $current = str_replace('v', '', $current);
+        $remote_ver = str_replace('v', '', $remote['version']);
         
-        if (version_compare($current_version_clean, $github_version, '<')) {
-            $theme_data = array(
-                'theme'       => $this->slug,
-                'new_version' => $github_version,
-                'url'         => 'https://github.com/' . $this->github_username . '/' . $this->github_repository,
-                'package'     => $github_data->zipball_url,
-                'requires'    => '5.0',
-                'requires_php' => '7.2'
+        if (version_compare($current, $remote_ver, '<')) {
+            $transient->response[$this->theme_slug] = array(
+                'theme'        => $this->theme_slug,
+                'new_version'  => $remote_ver,
+                'url'          => $remote['url'],
+                'package'      => $remote['package'],
             );
-            
-            if (!empty($this->github_token)) {
-                $theme_data['package'] = add_query_arg(
-                    array('access_token' => $this->github_token),
-                    $theme_data['package']
-                );
-            }
-            
-            $transient->response[$this->slug] = $theme_data;
         }
         
         return $transient;
     }
     
     /**
-     * Yedek oluştur
+     * GitHub API'den versiyon bilgisi
      */
-    private function create_backup() {
-        if (!wp_mkdir_p($this->backup_dir)) {
-            error_log('GitHub Updater: Yedek klasörü oluşturulamadı: ' . $this->backup_dir);
+    private function get_remote_version() {
+        $api_url = "https://api.github.com/repos/{$this->github_username}/{$this->github_repository}/releases/latest";
+        
+        $response = wp_remote_get($api_url, array(
+            'timeout' => 15,
+            'headers' => array(
+                'Accept' => 'application/vnd.github.v3+json',
+            )
+        ));
+        
+        if (is_wp_error($response)) {
             return false;
         }
         
-        $theme_dir = get_template_directory();
-        $backup_file = $this->backup_dir . 'restaurant-theme-backup-' . date('Y-m-d-H-i-s') . '.zip';
+        $data = json_decode(wp_remote_retrieve_body($response));
         
-        // Basit yedekleme - sadece önemli dosyalar
-        $files_to_backup = array(
-            'style.css',
-            'functions.php',
-            'header.php',
-            'footer.php',
-            'index.php',
-            'page.php'
+        if (!isset($data->tag_name)) {
+            return false;
+        }
+        
+        return array(
+            'version' => $data->tag_name,
+            'package' => $data->zipball_url,
+            'url'     => $data->html_url,
         );
-        
-        // Yedekleme işlemi buraya eklenebilir
-        // Gerçek bir yedekleme için ZipArchive kullanılabilir
-        
-        return true;
     }
     
     /**
-     * Admin bar'a güncelleme butonu ekle
+     * GitHub klasör yapısını düzelt
+     * Gelen: wp-content/upgrade/faikguler-restaurantv1-7ce4f29/
+     * Olması gereken: wp-content/upgrade/restaurantv1/
      */
-    public function add_admin_bar_update_button($wp_admin_bar) {
-        if (!current_user_can('update_themes')) {
-            return;
+    public function fix_github_folder($source, $remote_source, $upgrader, $hook_extra = null) {
+        global $wp_filesystem;
+        
+        // Sadece tema güncellemelerinde çalış
+        if (!isset($hook_extra['theme']) || $hook_extra['theme'] !== $this->theme_slug) {
+            return $source;
         }
         
-        $github_data = $this->get_repository_info();
-        if (!$github_data || !isset($github_data->tag_name)) {
-            return;
+        // Hedef klasör adı
+        $new_source = trailingslashit($remote_source) . $this->theme_slug . '/';
+        
+        // Kaynak klasörde style.css var mı kontrol et
+        if (!$wp_filesystem->exists($source . 'style.css')) {
+            // İlk alt klasörü bul
+            $files = $wp_filesystem->dirlist($source);
+            
+            if (is_array($files)) {
+                foreach ($files as $file => $info) {
+                    if ($info['type'] == 'd') {
+                        $subfolder = trailingslashit($source) . $file . '/';
+                        
+                        // Alt klasörde style.css var mı?
+                        if ($wp_filesystem->exists($subfolder . 'style.css')) {
+                            $source = $subfolder;
+                            break;
+                        }
+                    }
+                }
+            }
         }
         
-        $current_version = wp_get_theme($this->slug)->get('Version');
-        $current_version_clean = str_replace('v', '', $current_version);
-        $github_version = str_replace('v', '', $github_data->tag_name);
-        
-        if (version_compare($current_version_clean, $github_version, '<')) {
-            $wp_admin_bar->add_node(array(
-                'id' => 'github-updater-manual',
-                'title' => '<span class="ab-icon dashicons dashicons-update"></span> ' . 
-                          sprintf(__('Tema Güncelle: v%s', 'restaurant-theme'), $github_version),
-                'href' => admin_url('update-core.php'),
-                'meta' => array(
-                    'class' => 'github-updater-notice'
-                )
-            ));
-        }
-    }
-    
-    /**
-     * Güncelleme kontrolü
-     */
-    public function check_for_updates() {
-        delete_site_transient('update_themes');
-        wp_update_themes();
-    }
-    
-    /**
-     * Admin bildirimi göster
-     */
-    public function show_update_notice() {
-        if (!current_user_can('update_themes')) {
-            return;
+        // style.css hala yoksa hata ver
+        if (!$wp_filesystem->exists($source . 'style.css')) {
+            return new WP_Error('no_theme_files', 'Tema dosyaları bulunamadı.');
         }
         
-        $github_data = $this->get_repository_info();
-        
-        if (!$github_data || !isset($github_data->tag_name)) {
-            return;
+        // Klasörü doğru isme taşı
+        if ($source !== $new_source) {
+            if ($wp_filesystem->move($source, $new_source)) {
+                return $new_source;
+            } else {
+                return new WP_Error('move_failed', 'Tema klasörü taşınamadı.');
+            }
         }
         
-        $current_version = str_replace('v', '', wp_get_theme($this->slug)->get('Version'));
-        $github_version = str_replace('v', '', $github_data->tag_name);
-        
-        if (version_compare($current_version, $github_version, '<')) {
-            ?>
-            <div class="notice notice-warning is-dismissible">
-                <p>
-                    <strong><?php _e('🔄 Restaurant Theme Güncelleme Mevcut', 'restaurant-theme'); ?></strong><br>
-                    <?php printf(__('Yeni versiyon <strong>v%s</strong> mevcut. Mevcut versiyonunuz: v%s', 'restaurant-theme'), 
-                        $github_version, 
-                        $current_version
-                    ); ?>
-                    <br>
-                    <a href="<?php echo admin_url('update-core.php'); ?>" class="button button-primary" style="margin-top: 10px;">
-                        <?php _e('Güncellemeyi Başlat', 'restaurant-theme'); ?>
-                    </a>
-                    <a href="https://github.com/<?php echo $this->github_username; ?>/<?php echo $this->github_repository; ?>/releases" 
-                       target="_blank" class="button" style="margin-top: 10px;">
-                        <?php _e('Değişiklikleri Gör', 'restaurant-theme'); ?>
-                    </a>
-                </p>
-            </div>
-            <?php
-        }
-    }
-    
-    /**
-     * AJAX güncelleme kontrolü
-     */
-    public function ajax_check_updates() {
-        check_ajax_referer('restaurant_theme_nonce', 'nonce');
-        
-        $this->check_for_updates();
-        
-        wp_send_json_success(array(
-            'message' => __('Güncellemeler kontrol edildi.', 'restaurant-theme')
-        ));
+        return $new_source;
     }
 }
 
-// Güncelleme sistemini başlat
+// Sınıfı başlat
 new Restaurant_Theme_GitHub_Updater();
